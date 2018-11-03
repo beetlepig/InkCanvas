@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
-import GameMain from "./GameMain";
+import Login from "./Login";
+import {stores} from "../stores/index";
+import {observer} from "mobx-react";
+import {Main} from "./Main";
 
 
-
-export class Root extends Component {
+@observer export class Root extends Component {
 
     render() {
-        return (
-            <GameMain/>
-        );
+        if (stores.auth.user) {
+            return <Main />;
+        }
+        return <Login />;
     }
 
 }
