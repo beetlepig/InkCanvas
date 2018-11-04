@@ -2,11 +2,9 @@ import { observable, action } from 'mobx'
 
 
 export class UiStore {
-  @observable screen = {
-    current: 0,
-  };
+  @observable screen = 'LOGIN';
   
   @action setCurrentScreen(current){
-    this.screen.current = current;
+    this.screen = current;
   }
 }

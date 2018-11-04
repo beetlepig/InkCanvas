@@ -6,6 +6,7 @@ import {
   Image,
   ToastAndroid,
   KeyboardAvoidingView,
+  TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import { observable } from 'mobx';
@@ -38,6 +39,10 @@ export class Main extends React.Component {
     stores.mensajes.enviar(this.mensaje, stores.auth.user);
   }
 
+  enterRoom = () => {
+    stores.ui.setCurrentScreen('GAME');
+  };
+
   render() {
     return (
       <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
@@ -58,15 +63,15 @@ export class Main extends React.Component {
         </View>
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
-          {stores.mensajes.list.map(m => (
-            <View style={styles.mesas}>
+          {stores.mensajes.list.map((m, i) => (
+            <TouchableOpacity style={styles.mesas} key={i} onPress={this.enterRoom}>
               <Image
                 source={{ uri: stores.auth.user.image }}
                 style={styles.image}
               />
               <Text>{m.mensaje}</Text>
               <Text style={styles.empezar}>Jugar</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
