@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "837112694624",
+    "firebase_url": "https://supercanvas-db1b5.firebaseio.com",
+    "project_id": "supercanvas-db1b5",
+    "storage_bucket": "supercanvas-db1b5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837112694624:android:59dd32cbb7bf3a2a",
+        "android_client_info": {
+          "package_name": "com.inkcanvas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "837112694624-1fpo96vqna5c82hsftk9kfe86o1hj4nk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.inkcanvas",
+            "certificate_hash": "b2b68f53afdcf7deb8b1a75f1d7d522997abdf30"
+          }
+        },
+        {
+          "client_id": "837112694624-r2vk5ar6j5eoe4cacv6k80mcjvaqnro2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYoLRjZnUTXScipuTadUd-UEfOhCc53uI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "837112694624-r2vk5ar6j5eoe4cacv6k80mcjvaqnro2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

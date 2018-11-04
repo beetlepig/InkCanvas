@@ -1,8 +1,9 @@
 import { AuthStore } from './AuthStore.js';
 import { MensajesStore } from './MensajesStore.js';
 
-import * as firebase from 'firebase';
+import firebase from 'react-native-firebase';
 
+/*
 if (!firebase.apps.length)
   firebase.initializeApp({
     apiKey: 'AIzaSyD3CdvAdWyQ-PocI5Dzxg5jeosLxv3uuxM',
@@ -12,6 +13,7 @@ if (!firebase.apps.length)
     storageBucket: 'supercanvas-db1b5.appspot.com',
     messagingSenderId: '837112694624',
   });
+*/
 
 export const stores = {
   auth: new AuthStore(firebase),
