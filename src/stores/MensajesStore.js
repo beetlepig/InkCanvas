@@ -10,7 +10,7 @@ export class MensajesStore {
   
   constructor(firebase){
     this.fb = firebase;
-    this.db = firebase.database();
+    this.db = this.fb.database();
     
     this.msjRef = this.db.ref('mensajes');
     
