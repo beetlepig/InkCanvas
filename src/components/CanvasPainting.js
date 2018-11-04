@@ -8,11 +8,13 @@ import {StyleSheet, View, StatusBar} from 'react-native';
 import Canvas from 'react-native-canvas';
 import { Accelerometer } from "react-native-sensors";
 import { Dimensions } from 'react-native';
+import {Text} from "react-native-elements";
 const {height, width} = Dimensions.get('window');
 
 export default class CanvasPainting extends Component {
     ctx;
     ctxCircle;
+    ctxPoints;
     clickX = [];
     clickY = [];
     clickDrag = [];
@@ -22,10 +24,12 @@ export default class CanvasPainting extends Component {
 
     xpos;
     ypos;
-
+    indexMenor = 0;
 
     constructor(props) {
         super(props);
+
+        this.state = {numberOfPoints: 0};
 
         this.xpos = width / 2;
         this.ypos = height / 2;
@@ -61,16 +65,22 @@ export default class CanvasPainting extends Component {
         this.redraw();
     };
 
+    handlePointsCanvas = (canvas) => {
+        canvas.height = Math.round(height);
+        canvas.width = Math.round(width);
+        this.ctxPoints = canvas.getContext('2d');
+    };
+
     moveRect(x, y) {
-        if(x < - 0.1 && (this.xpos < this.ctxCircle.canvas.width)) {
+        if(x < - 0.5 && (this.xpos < this.ctxCircle.canvas.width)) {
             this.xpos += 10;
-        } else if (x > 0.1 && (this.xpos > 0)) {
+        } else if (x > 0.5 && (this.xpos > 0)) {
             this.xpos -= 10;
         }
 
-        if(y < - 0.1 && this.ypos > 0) {
+        if(y < - 0.5 && this.ypos > 0) {
             this.ypos -= 10;
-        } else if(y > 0.1 && this.ypos < this.ctxCircle.canvas.height) {
+        } else if(y > 0.5 && this.ypos < this.ctxCircle.canvas.height) {
             this.ypos += 10;
         }
         this.addClick(this.xpos, this.ypos, true);
@@ -93,12 +103,25 @@ export default class CanvasPainting extends Component {
 
     addClick(x, y, dragging)
     {
-        const a = this.clickX[this.clickX.length - 1] - x;
-        const b = this.clickY[this.clickY.length - 1] - y;
-        if(Math.sqrt( a * a + b * b ) > 25) {
+        let count = 0;
+        let lastDist = 999999;
+        for(let i = 0; i < this.clickX.length; i++) {
+            const a = this.clickX[i] - x;
+            const b = this.clickY[i] - y;
+            const dist = Math.sqrt( a * a + b * b );
+            if(dist > 40) {
+                count++;
+                if(dist < lastDist) {
+                    lastDist = dist;
+                    this.indexMenor = i;
+                }
+            }
+        }
+        if(count >= this.clickX.length) {
             this.clickX.push(x);
             this.clickY.push(y);
             this.clickDrag.push(dragging);
+            this.setState({numberOfPoints: this.clickX.length});
             this.paintLine();
         }
     }
@@ -130,13 +153,24 @@ export default class CanvasPainting extends Component {
         const i = this.clickX.length - 1;
         this.ctx.beginPath();
         if(this.clickDrag[i] && i){
-            this.ctx.moveTo(this.clickX[i-1], this.clickY[i-1]);
+            this.ctx.moveTo(this.clickX[this.indexMenor], this.clickY[this.indexMenor]);
         }else{
             this.ctx.moveTo(this.clickX[i]-1, this.clickY[i]);
         }
         this.ctx.lineTo(this.clickX[i], this.clickY[i]);
         this.ctx.closePath();
         this.ctx.stroke();
+
+        /*
+        this.ctxPoints.strokeStyle = "#d9dfdc";
+        this.ctxPoints.lineJoin = "round";
+        this.ctxPoints.lineWidth = 10;
+        this.ctxPoints.beginPath();
+        this.ctxPoints.moveTo(this.clickX[i]-1, this.clickY[i]);
+        this.ctxPoints.lineTo(this.clickX[i], this.clickY[i]);
+        this.ctxPoints.closePath();
+        this.ctxPoints.stroke();
+        */
     }
 
     onTouchEvent(name, ev) {
@@ -177,17 +211,20 @@ export default class CanvasPainting extends Component {
 
 
     render() {
-
         return (
+            // <View style={styles.pointsCanvas}><Canvas ref={this.handlePointsCanvas}/></View>
             //  <View onStartShouldSetResponder={(ev) => true} onResponderGrant={this.onTouchEvent.bind(this, "onResponderGrant")} onResponderMove={this.onTouchEvent.bind(this, "onResponderMove")} onResponderRelease={this.onTouchEvent.bind(this, "onResponderRelease")}>
             <View style={styles.generalCanvasContainer}>
                 <StatusBar hidden />
                 <View style={styles.paintCanvas}>
                     <Canvas ref={this.handleCanvas}/>
                 </View>
+
                 <View style={styles.circleCanvas}>
-                    <Canvas ref={this.handleCircleCanvas}/>
+                   <Canvas ref={this.handleCircleCanvas}/>
                 </View>
+                <Text>Puntos: {this.state.numberOfPoints}</Text>
+                {this.state.numberOfPoints > 120? <Text>YOU WIN</Text>: <Text/>}
             </View>
         );
 
@@ -208,6 +245,11 @@ const styles = StyleSheet.create({
         height: '100%'
     },
     circleCanvas: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%'
+    },
+    pointsCanvas: {
         position: 'absolute',
         width: '100%',
         height: '100%'
