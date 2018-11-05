@@ -8,17 +8,18 @@ import {StyleSheet, View, StatusBar} from 'react-native';
 import Canvas from 'react-native-canvas';
 import { Accelerometer } from "react-native-sensors";
 import { Dimensions } from 'react-native';
-import {Text} from "react-native-elements";
+import {Button, Text} from "react-native-elements";
 import type {SyntheticEvent} from "react-native/Libraries/Types/CoreEventTypes";
+import {stores} from "../stores";
+import {observer} from "mobx-react";
 const {height, width} = Dimensions.get('window');
 
 type State = {
-    numberOfPoints: number
 }
 
 type Props = {}
 
-export default class CanvasPainting extends Component<Props, State> {
+@observer export default class CanvasPainting extends Component<Props, State> {
     ctx: CanvasRenderingContext2D;
     ctxCircle: CanvasRenderingContext2D;
    // ctxPoints: CanvasRenderingContext2D;
@@ -36,10 +37,6 @@ export default class CanvasPainting extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        this.state = {
-            numberOfPoints: 0
-        };
-
         this.xpos = width / 2;
         this.ypos = height / 2;
 
@@ -49,7 +46,9 @@ export default class CanvasPainting extends Component<Props, State> {
             this.accelerationObservable = observable;
             this.accelerationObservable.subscribe(({ x, y }) => {
                 // console.log('x valor: '+ x + ' y valor: ' + y);
-                this.moveRect(x, y);
+                if(stores.firestore.myPoints < 120 && stores.firestore.enemyPoints < 120) {
+                    this.moveRect(x, y);
+                }
             });
         }).catch(error => {
             console.log("The sensor is not available " + error);
@@ -59,19 +58,24 @@ export default class CanvasPainting extends Component<Props, State> {
 
     componentWillUnmount() {
         this.accelerationObservable.stop();
+        stores.firestore.closeDocumentLIstener();
     }
 
     handleCanvas = (canvas: any) => {
-        canvas.height = height;
-        canvas.width = width;
-        this.ctx = canvas.getContext('2d');
+        if(canvas) {
+            canvas.height = height + 1;
+            canvas.width = width + 1;
+            this.ctx = canvas.getContext('2d');
+        }
     };
 
     handleCircleCanvas = (canvas: any) => {
-        canvas.height = height;
-        canvas.width = width;
-        this.ctxCircle = canvas.getContext('2d');
-        this.redraw();
+        if(canvas) {
+            canvas.height = height + 1;
+            canvas.width = width + 1;
+            this.ctxCircle = canvas.getContext('2d');
+            this.redraw();
+        }
     };
     /*
     handlePointsCanvas = (canvas) => {
@@ -131,7 +135,7 @@ export default class CanvasPainting extends Component<Props, State> {
             this.clickX.push(x);
             this.clickY.push(y);
             this.clickDrag.push(dragging);
-            this.setState({numberOfPoints: this.clickX.length});
+            stores.firestore.updateScore(this.clickX.length);
             this.paintLine();
         }
     }
@@ -219,6 +223,11 @@ export default class CanvasPainting extends Component<Props, State> {
 
     }
 
+    TerminarJuego = () => {
+        stores.firestore.removeActiveDocument();
+        stores.ui.setCurrentScreen('MAIN');
+    };
+
 
     render() {
         return (
@@ -233,8 +242,11 @@ export default class CanvasPainting extends Component<Props, State> {
                 <View style={styles.circleCanvas}>
                    <Canvas ref={this.handleCircleCanvas}/>
                 </View>
-                <Text>Puntos: {this.state.numberOfPoints}</Text>
-                {this.state.numberOfPoints > 120? <Text>YOU WIN</Text>: <Text/>}
+                <Text>Puntos: {stores.firestore.myPoints}</Text>
+                <Text>Puntos otro jugador: {stores.firestore.enemyPoints}</Text>
+                {stores.firestore.myPoints >= 120? <Text>YOU WIN</Text>: <Text/>}
+                {stores.firestore.enemyPoints >= 120? <Text>EL OTRO JUGADOR GANA</Text>: <Text/>}
+                {stores.firestore.enemyPoints >= 120 || stores.firestore.myPoints >= 120? <Button title={'Salir'} onPress={this.TerminarJuego}/>: <Text/>}
             </View>
         );
 

@@ -1,3 +1,8 @@
+/**
+ * @format
+ * @flow
+ */
+
 import React, { Component } from 'react';
 import {
     Text,
@@ -16,10 +21,17 @@ import {
 import { FormLabel, FormInput, Button } from 'react-native-elements';
 import {stores} from "../stores/index";
 
+type State = {
+    user: string,
+    pass: string,
+}
 
-export default class LoginForm extends Component{
+type Props = {};
 
-    constructor(props) {
+
+export default class LoginForm extends Component<Props, State>{
+
+    constructor(props: Props) {
         super(props);
         this.state = {
             user: 'sky_karlos@hotmail.com',
@@ -34,7 +46,7 @@ export default class LoginForm extends Component{
         });
     };
 
-    updateInputs = (text, type) => {
+    updateInputs = (text: string, type: string) => {
         switch (type) {
             case 'user':
                 this.setState({user: text});
@@ -74,7 +86,6 @@ export default class LoginForm extends Component{
 
                 <TouchableOpacity
                     style={styles.buttonContainer}
-                    title="Entrar"
                     onPress={this.entrar}>
                     <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>

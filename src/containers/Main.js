@@ -1,3 +1,8 @@
+/**
+ * @format
+ * @flow
+ */
+
 import * as React from 'react';
 import {
   Text,
@@ -9,25 +14,32 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { observable } from 'mobx';
-import { observer } from 'mobx-react';
-import { FormLabel, FormInput, Button } from 'react-native-elements';
+import { FormInput, Button } from 'react-native-elements';
 import {stores} from "../stores/index";
+import {observer} from "mobx-react";
 import type {IRoom} from "../stores/FireStore";
 
+type State = {
+    roomNameText: string;
+}
+
+type Props = {
+}
 
 
-@observer export class Main extends React.Component {
 
-  @observable mensaje: string = '';
+@observer export class Main extends React.Component<Props, State> {
 
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
+    this.state = {
+        roomNameText: ''
+    }
   }
 
    componentDidMount() {
-        stores.firestore.init();
+     stores.firestore.init();
    }
 
    componentWillUnmount() {
@@ -41,14 +53,15 @@ import type {IRoom} from "../stores/FireStore";
 
   createRoom = () => {
     ToastAndroid.show('creando sala...', ToastAndroid.SHORT);
-    stores.firestore.createRoom(this.mensaje).then((docRef) => {
-        this.mensaje = '';
+    this.setState({roomNameText: ''});
+    stores.firestore.createRoom(this.state.roomNameText).then((docRef) => {
+        stores.ui.setCurrentScreen('WAITING');
     });
   };
 
   enterRoom = (index: number) => {
     stores.firestore.jointGuest(index).then( () => {
-        stores.ui.setCurrentScreen('GAME');
+      //  stores.ui.setCurrentScreen('GAME');
     });
   };
 
@@ -62,7 +75,7 @@ import type {IRoom} from "../stores/FireStore";
             style={styles.image}
           />
           <Text style={styles.userText}>
-            {stores.auth.user ? `usuario` : 'No has iniciado sesión'}
+            {stores.auth.user ? stores.auth.user.email : 'No has iniciado sesión'}
           </Text>
           <Button
             buttonStyle={styles.buttonSalir}
@@ -72,7 +85,7 @@ import type {IRoom} from "../stores/FireStore";
           />
         </View>
 
-        <ScrollView contentContainerStyle={styles.contentContainer}>
+        <ScrollView>
           {stores.firestore.availableRooms.map((m: IRoom, i: number) => (
             <TouchableOpacity style={styles.mesas} key={i} onPress={() => this.enterRoom(i)}>
               <Image
@@ -80,7 +93,7 @@ import type {IRoom} from "../stores/FireStore";
                 style={styles.image}
               />
               <Text>{m.data().nombreSala}</Text>
-              <Text style={styles.empezar}>Jugar</Text>
+              <Text>Jugar</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -92,9 +105,9 @@ import type {IRoom} from "../stores/FireStore";
           <View style={styles.crea}>
             <FormInput
               containerStyle={styles.input}
-              value={this.mensaje}
-              onChangeText={t => (this.mensaje = t)}
-              placeholder="Mensaje"
+              value={this.state.roomNameText}
+              onChangeText={t => (this.setState({roomNameText: t}))}
+              placeholder="Nombre de la sala"
             />
             <Button
               buttonStyle={styles.buttonEnviar}
