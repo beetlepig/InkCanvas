@@ -6,7 +6,7 @@
 import { observable, action } from 'mobx';
 import md5 from 'md5';
 import {stores} from "./index";
-import * as firebase from 'react-native-firebase/dist/index.js.flow';
+import * as firebase from 'react-native-firebase';
 
 interface specialUser extends firebase.User {
     image: string;

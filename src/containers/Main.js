@@ -13,37 +13,47 @@ import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { FormLabel, FormInput, Button } from 'react-native-elements';
 import {stores} from "../stores/index";
+import type {IRoom} from "../stores/FireStore";
 
 
 
-@observer
-export class Main extends React.Component {
-  @observable
-  mensaje = '';
+@observer export class Main extends React.Component {
 
-  _subscription = null;
+  @observable mensaje: string = '';
+
 
   constructor(props) {
     super(props);
-    this.salir = this.salir.bind(this);
-    this.enviar = this.enviar.bind(this);
   }
 
-  salir() {
+   componentDidMount() {
+        stores.firestore.init();
+   }
+
+   componentWillUnmount() {
+       stores.firestore.closeListener();
+   }
+
+  salir = () => {
     ToastAndroid.show('saliendo...', ToastAndroid.SHORT);
     stores.auth.logout();
-  }
+  };
 
-  enviar() {
-    ToastAndroid.show('enviando...', ToastAndroid.SHORT);
-    stores.mensajes.enviar(this.mensaje, stores.auth.user);
-  }
+  createRoom = () => {
+    ToastAndroid.show('creando sala...', ToastAndroid.SHORT);
+    stores.firestore.createRoom(this.mensaje).then((docRef) => {
+        this.mensaje = '';
+    });
+  };
 
-  enterRoom = () => {
-    stores.ui.setCurrentScreen('GAME');
+  enterRoom = (index: number) => {
+    stores.firestore.jointGuest(index).then( () => {
+        stores.ui.setCurrentScreen('GAME');
+    });
   };
 
   render() {
+
     return (
       <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
         <View style={styles.barIni}>
@@ -63,13 +73,13 @@ export class Main extends React.Component {
         </View>
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
-          {stores.mensajes.list.map((m, i) => (
-            <TouchableOpacity style={styles.mesas} key={i} onPress={this.enterRoom}>
+          {stores.firestore.availableRooms.map((m: IRoom, i: number) => (
+            <TouchableOpacity style={styles.mesas} key={i} onPress={() => this.enterRoom(i)}>
               <Image
                 source={{ uri: stores.auth.user.image }}
                 style={styles.image}
               />
-              <Text>{m.mensaje}</Text>
+              <Text>{m.data().nombreSala}</Text>
               <Text style={styles.empezar}>Jugar</Text>
             </TouchableOpacity>
           ))}
@@ -90,12 +100,13 @@ export class Main extends React.Component {
               buttonStyle={styles.buttonEnviar}
               containerViewStyle={styles.buttonContainer}
               title="Enviar"
-              onPress={this.enviar}
+              onPress={this.createRoom}
             />
           </View>
         </View>
       </KeyboardAvoidingView>
     );
+
   }
 }
 
