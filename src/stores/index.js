@@ -1,8 +1,12 @@
+/**
+ * @format
+ * @flow
+ */
+
 import { AuthStore } from './AuthStore.js';
-import { MensajesStore } from './MensajesStore.js';
+import {FireStore} from "./FireStore";
 import {UiStore} from "./UiStore";
 
-import firebase from 'react-native-firebase';
 
 
 /*
@@ -18,7 +22,7 @@ if (!firebase.apps.length)
 */
 
 export const stores = {
-  auth: new AuthStore(firebase),
-  mensajes: new MensajesStore(firebase),
+  auth: new AuthStore(),
+  firestore: new FireStore(),
   ui: new UiStore()
 };

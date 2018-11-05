@@ -9,41 +9,50 @@ import Canvas from 'react-native-canvas';
 import { Accelerometer } from "react-native-sensors";
 import { Dimensions } from 'react-native';
 import {Text} from "react-native-elements";
+import type {SyntheticEvent} from "react-native/Libraries/Types/CoreEventTypes";
 const {height, width} = Dimensions.get('window');
 
-export default class CanvasPainting extends Component {
-    ctx;
-    ctxCircle;
-    ctxPoints;
+type State = {
+    numberOfPoints: number
+}
+
+type Props = {}
+
+export default class CanvasPainting extends Component<Props, State> {
+    ctx: CanvasRenderingContext2D;
+    ctxCircle: CanvasRenderingContext2D;
+   // ctxPoints: CanvasRenderingContext2D;
     clickX = [];
     clickY = [];
     clickDrag = [];
     paint = false;
 
-    accelerationObservable = null;
+    accelerationObservable: any;
 
-    xpos;
-    ypos;
+    xpos: number;
+    ypos: number;
     indexMenor = 0;
 
-    constructor(props) {
+    constructor(props: Props) {
         super(props);
 
-        this.state = {numberOfPoints: 0};
+        this.state = {
+            numberOfPoints: 0
+        };
 
         this.xpos = width / 2;
         this.ypos = height / 2;
 
         new Accelerometer({
             updateInterval: 100
-        }).then(observable => {
+        }).then((observable) => {
             this.accelerationObservable = observable;
             this.accelerationObservable.subscribe(({ x, y }) => {
                 // console.log('x valor: '+ x + ' y valor: ' + y);
                 this.moveRect(x, y);
             });
         }).catch(error => {
-            console.log("The sensor is not available");
+            console.log("The sensor is not available " + error);
         });
         this.firstPoint();
     }
@@ -52,26 +61,27 @@ export default class CanvasPainting extends Component {
         this.accelerationObservable.stop();
     }
 
-    handleCanvas = (canvas) => {
-        canvas.height = Math.round(height);
-        canvas.width = Math.round(width);
+    handleCanvas = (canvas: any) => {
+        canvas.height = height;
+        canvas.width = width;
         this.ctx = canvas.getContext('2d');
     };
 
-    handleCircleCanvas = (canvas) => {
-        canvas.height = Math.round(height);
-        canvas.width = Math.round(width);
+    handleCircleCanvas = (canvas: any) => {
+        canvas.height = height;
+        canvas.width = width;
         this.ctxCircle = canvas.getContext('2d');
         this.redraw();
     };
-
+    /*
     handlePointsCanvas = (canvas) => {
         canvas.height = Math.round(height);
         canvas.width = Math.round(width);
         this.ctxPoints = canvas.getContext('2d');
     };
+    */
 
-    moveRect(x, y) {
+    moveRect(x: number, y: number) {
         if(x < - 0.5 && (this.xpos < this.ctxCircle.canvas.width)) {
             this.xpos += 10;
         } else if (x > 0.5 && (this.xpos > 0)) {
@@ -101,7 +111,7 @@ export default class CanvasPainting extends Component {
         this.clickDrag.push(false);
     }
 
-    addClick(x, y, dragging)
+    addClick(x: number, y: number, dragging: boolean)
     {
         let count = 0;
         let lastDist = 999999;
@@ -173,7 +183,7 @@ export default class CanvasPainting extends Component {
         */
     }
 
-    onTouchEvent(name, ev) {
+    onTouchEvent(name: string, ev: SyntheticEvent<Touch>) {
         const mouseX = ev.nativeEvent.pageX;
         const mouseY = ev.nativeEvent.pageY;
         switch (name) {
