@@ -4,7 +4,7 @@
  */
 
 import React, {Component} from 'react';
-import {StyleSheet, View, StatusBar} from 'react-native';
+import {StyleSheet, View, StatusBar, TouchableHighlight, Image} from 'react-native';
 import Canvas from 'react-native-canvas';
 import { Accelerometer } from "react-native-sensors";
 import { Dimensions } from 'react-native';
@@ -15,6 +15,9 @@ import {observer} from "mobx-react";
 const {height, width} = Dimensions.get('window');
 
 type State = {
+    paintAmount: number,
+    bottlePos: string[],
+    displayBottle: boolean
 }
 
 type Props = {}
@@ -33,12 +36,23 @@ type Props = {}
     xpos: number;
     ypos: number;
     indexMenor = 0;
+    spawnInterval: any;
 
     constructor(props: Props) {
         super(props);
-
+        this.state = {
+            paintAmount: 100,
+            bottlePos: [this.getRandomArbitrary(10,90)+'%', this.getRandomArbitrary(10,90)+'%'],
+            displayBottle: false
+        };
         this.xpos = width / 2;
         this.ypos = height / 2;
+
+        this.spawnInterval = setInterval(() => {
+            this.setState({bottlePos: [this.getRandomArbitrary(10,90)+'%', this.getRandomArbitrary(10,90)+'%'], displayBottle: true})
+        }, 5000);
+
+
 
         new Accelerometer({
             updateInterval: 100
@@ -46,7 +60,7 @@ type Props = {}
             this.accelerationObservable = observable;
             this.accelerationObservable.subscribe(({ x, y }) => {
                 // console.log('x valor: '+ x + ' y valor: ' + y);
-                if(stores.firestore.myPoints < 120 && stores.firestore.enemyPoints < 120) {
+                if(stores.firestore.myPoints < 120 && stores.firestore.enemyPoints < 120 && this.state.paintAmount > 0) {
                     this.moveRect(x, y);
                 }
             });
@@ -59,6 +73,7 @@ type Props = {}
     componentWillUnmount() {
         this.accelerationObservable.stop();
         stores.firestore.closeDocumentLIstener();
+        clearInterval(this.spawnInterval);
     }
 
     handleCanvas = (canvas: any) => {
@@ -88,14 +103,18 @@ type Props = {}
     moveRect(x: number, y: number) {
         if(x < - 0.5 && (this.xpos < this.ctxCircle.canvas.width)) {
             this.xpos += 10;
+            this.setState({paintAmount: this.state.paintAmount-1});
         } else if (x > 0.5 && (this.xpos > 0)) {
             this.xpos -= 10;
+            this.setState({paintAmount: this.state.paintAmount-1});
         }
 
         if(y < - 0.5 && this.ypos > 0) {
             this.ypos -= 10;
+            this.setState({paintAmount: this.state.paintAmount-1});
         } else if(y > 0.5 && this.ypos < this.ctxCircle.canvas.height) {
             this.ypos += 10;
+            this.setState({paintAmount: this.state.paintAmount-1});
         }
         this.addClick(this.xpos, this.ypos, true);
         this.redrawCircle();
@@ -242,8 +261,12 @@ type Props = {}
                 <View style={styles.circleCanvas}>
                    <Canvas ref={this.handleCircleCanvas}/>
                 </View>
+
+                {this.state.displayBottle?<TouchableHighlight style={styles.paintBottleTouchable} onPress={this.bottleTouched}><Image style={[styles.paintBottle, {top: this.state.bottlePos[0], left: this.state.bottlePos[1]}]} source={require('../assets/epoxy-spray-paint-500x500.png')}/></TouchableHighlight>: null}
+
                 <Text>Puntos: {stores.firestore.myPoints}</Text>
                 <Text>Puntos otro jugador: {stores.firestore.enemyPoints}</Text>
+                <Text>Pintura disponible: {this.state.paintAmount}</Text>
                 {stores.firestore.myPoints >= 120? <Text>YOU WIN</Text>: <Text/>}
                 {stores.firestore.enemyPoints >= 120? <Text>EL OTRO JUGADOR GANA</Text>: <Text/>}
                 {stores.firestore.enemyPoints >= 120 || stores.firestore.myPoints >= 120? <Button title={'Salir'} onPress={this.TerminarJuego}/>: <Text/>}
@@ -251,6 +274,15 @@ type Props = {}
         );
 
     }
+
+    bottleTouched = () => {
+      this.setState({paintAmount: this.state.paintAmount + this.getRandomArbitrary(50,100) , displayBottle: false});
+    };
+
+    getRandomArbitrary(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
 }
 
 
@@ -272,6 +304,15 @@ const styles = StyleSheet.create({
         height: '100%'
     },
     pointsCanvas: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%'
+    },
+    paintBottle:  {
+        width: width * 0.2,
+        height: width * 0.2
+    },
+    paintBottleTouchable: {
         position: 'absolute',
         width: '100%',
         height: '100%'
